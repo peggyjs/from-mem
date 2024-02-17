@@ -22,8 +22,8 @@ npm install @peggyjs/from-mem
 ## Usage
 
 ```js
-const fromMem = require("@peggyjs/from-mem");
-const mod = fromMem(`
+import fromMem from "@peggyjs/from-mem"; // or require("@peggyjs/from-mem")
+const mod = await fromMem(`
 import foo from "../foo.js" // Loads ./test/foo.js
 export function bar() {
   return foo() + 2;
@@ -31,7 +31,7 @@ export function bar() {
 `, {
   filename: path.join(__dirname, "test", "fixtures", "test.js"),
   format: "es",
-})
+});
 mod.bar();
 ```
 
