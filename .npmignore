@@ -1,3 +1,8 @@
 eslint.config.js
 pnpm-lock.yaml
 test/
+coverage/
+.github/
+.vscode/
+tsconfig.json
+.c8rc

@@ -10,6 +10,7 @@ const vm = require("vm");
 const { Module } = require("module");
 const path = require("path");
 const url = require("url");
+const semver = require("semver");
 
 // These already exist in a new, blank VM.  Date, JSON, NaN, etc.
 // Things from the core language.
@@ -27,7 +28,9 @@ const neededKeys = Object
   .filter(k => !vmGlobals.includes(k))
   .sort();
 const globalContext = Object.fromEntries(
-  neededKeys.map(k => [k, global[k]])
+  neededKeys.map(k => [k, global[
+    /** @type {keyof typeof global} */ (k)
+  ]])
 );
 
 // In node <15, console is in vmGlobals.
@@ -40,7 +43,7 @@ globalContext.console = console;
  * @property {"amd"|"bare"|"commonjs"|"es"|"globals"|"umd"} [format="commonjs"]
  *   What format does the code have?  Throws an error if the format is not
  *   "commonjs", "es", "umd", or "bare".
- * @property {string} [filename=__filename] What is the fully-qualified synthetic
+ * @property {string} filename What is the fully-qualified synthetic
  *   filename for the code?  Most important is the directory, which is used to
  *   find modules that the code import's or require's.
  * @property {object} [context={}] Variables to make availble in the global
@@ -61,6 +64,7 @@ globalContext.console = console;
  * @returns {object} The module exports from code
  */
 function requireString(code, dirname, options) {
+  // @ts-expect-error This isn't correct.
   const m = new Module(options.filename, module); // Current module is parent.
   // This is the function that will be called by `require()` in the parser.
   m.require = Module.createRequire(options.filename);
@@ -98,18 +102,14 @@ function resolveIfNeeded(dirname, specifier) {
  * @param {string} code Source code in es6 format.
  * @param {string} dirname Where the synthetic file would have lived.
  * @param {FromMemOptions} options
- * @returns {object} The module exports from code
+ * @returns {Promise<unknown>} The module exports from code
  */
 async function importString(code, dirname, options) {
   if (!vm.SourceTextModule) {
     throw new Error("Start node with --experimental-vm-modules for this to work");
   }
 
-  const [maj, min] = process.version
-    .match(/^v(\d+)\.(\d+)\.(\d+)/)
-    .slice(1)
-    .map(x => parseInt(x, 10));
-  if ((maj < 20) || ((maj === 20) && (min < 8))) {
+  if (!semver.satisfies(process.version, ">=20.8")) {
     throw new Error("Requires node.js 20.8+ or 21.");
   }
 
@@ -119,6 +119,7 @@ async function importString(code, dirname, options) {
     initializeImportMeta(meta) {
       meta.url = String(url.pathToFileURL(options.filename));
     },
+    // @ts-expect-error Types in @types/node are wrong.
     importModuleDynamically(specifier) {
       return import(resolveIfNeeded(dirname, specifier));
     },
@@ -147,17 +148,16 @@ async function importString(code, dirname, options) {
  * Peggy output formats.  Returns the exports of the module.
  *
  * @param {string} code Code to import
- * @param {FromMemOptions} [options] Options.  Most important is filename.
- * @returns {Promise<object>} The evaluated code.
+ * @param {FromMemOptions} options Options.  Most important is filename.
+ * @returns {Promise<unknown>} The evaluated code.
  */
 // eslint-disable-next-line require-await -- Always want to return a Promise
 module.exports = async function fromMem(code, options) {
   options = {
     format: "commonjs",
-    filename: `${__filename}-string`,
     context: {},
     includeGlobals: true,
-    globalExport: null,
+    globalExport: undefined,
     ...options,
   };
 
@@ -167,9 +167,15 @@ module.exports = async function fromMem(code, options) {
       ...options.context,
     };
   }
+
+  // @ts-expect-error Context is always non-null
   options.context.global = options.context;
+  // @ts-expect-error Context is always non-null
   options.context.globalThis = options.context;
 
+  if (!options?.filename) {
+    throw new TypeError("filename is required");
+  }
   options.filename = path.resolve(options.filename);
   const dirname = path.dirname(options.filename);
 
