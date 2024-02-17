@@ -1,0 +1,21 @@
+{
+  "name": "from-mem",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Joe Hildebrand <joe-github@cursive.net>",
+  "license": "MIT",
+  "devDependencies": {
+    "@peggyjs/eslint-config": "3.2.2",
+    "eslint": "8.56.0"
+  },
+  "packageManager": "pnpm@8.15.3",
+  "engines": {
+    "node": ">18.2"
+  }
+}
