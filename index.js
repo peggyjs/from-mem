@@ -6,10 +6,11 @@
 // Ideas taken from the "module-from-string" and "eval" modules, neither of
 // which were situated correctly to be used as-is.
 
-const vm = require("vm");
-const { Module } = require("module");
-const path = require("path");
-const url = require("url");
+const fs = require("node:fs/promises");
+const vm = require("node:vm");
+const { Module } = require("node:module");
+const path = require("node:path");
+const url = require("node:url");
 const semver = require("semver");
 
 // These already exist in a new, blank VM.  Date, JSON, NaN, etc.
@@ -40,9 +41,9 @@ globalContext.console = console;
  * Options for how to process code.
  *
  * @typedef {object} FromMemOptions
- * @property {"amd"|"bare"|"commonjs"|"es"|"globals"|"umd"} [format="commonjs"]
- *   What format does the code have?  Throws an error if the format is not
- *   "commonjs", "es", "umd", or "bare".
+ * @property {"amd"|"bare"|"commonjs"|"es"|"globals"|"guess"|"umd"} [format="commonjs"]
+ *   What format does the code have?  "guess" means to read the closest
+ *   package.json file looking for the "type" key.
  * @property {string} filename What is the fully-qualified synthetic
  *   filename for the code?  Most important is the directory, which is used to
  *   find modules that the code import's or require's.
@@ -117,7 +118,7 @@ async function importString(code, dirname, options) {
     ? options.filename
     : url.pathToFileURL(options.filename).toString();
   const dirUrl = dirname.startsWith("file:")
-    ? dirname
+    ? dirname + "/"
     : url.pathToFileURL(dirname).toString() + "/";
 
   const mod = new vm.SourceTextModule(code, {
@@ -151,6 +152,41 @@ async function importString(code, dirname, options) {
 }
 
 /**
+ * Figure out the module type for the given file.  If no package.json is
+ * found, default to "commonjs".
+ *
+ * @param {string} filename Fully-qualified filename to start from.
+ * @returns {Promise<"commonjs"|"es">}
+ * @throws On invalid package.json
+ */
+async function guessModuleType(filename) {
+  const fp = path.parse(filename);
+  switch (fp.ext) {
+    case ".cjs": return "commonjs";
+    case ".mjs": return "es";
+    default:
+      // Fall-through
+  }
+  let dir = fp.dir;
+  let prev = undefined;
+  while (dir !== prev) {
+    try {
+      const pkg = await fs.readFile(path.join(dir, "package.json"), "utf8");
+      const pkgj = JSON.parse(pkg);
+      return (pkgj.type === "module") ? "es" : "commonjs";
+    } catch (err) {
+      // If the file just didn't exist, keep going.
+      if (/** @type {NodeJS.ErrnoException} */ (err).code !== "ENOENT") {
+        throw err;
+      }
+    }
+    prev = dir;
+    dir = path.dirname(dir);
+  }
+  return "commonjs";
+}
+
+/**
  * Import or require the given code from memory.  Knows about the different
  * Peggy output formats.  Returns the exports of the module.
  *
@@ -158,7 +194,6 @@ async function importString(code, dirname, options) {
  * @param {FromMemOptions} options Options.  Most important is filename.
  * @returns {Promise<unknown>} The evaluated code.
  */
-// eslint-disable-next-line require-await -- Always want to return a Promise
 module.exports = async function fromMem(code, options) {
   options = {
     format: "commonjs",
@@ -180,12 +215,18 @@ module.exports = async function fromMem(code, options) {
   // @ts-expect-error Context is always non-null
   options.context.globalThis = options.context;
 
-  if (!options?.filename) {
+  if (!options.filename) {
     throw new TypeError("filename is required");
   }
-  options.filename = path.resolve(options.filename);
+  if (!options.filename.startsWith("file:")) {
+    // File URLs must be already resolved.
+    options.filename = path.resolve(options.filename);
+  }
   const dirname = path.dirname(options.filename);
 
+  if (options.format === "guess") {
+    options.format = await guessModuleType(options.filename);
+  }
   switch (options.format) {
     case "bare":
     case "commonjs":
