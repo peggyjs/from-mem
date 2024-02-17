@@ -42,10 +42,10 @@ fromMem(code: string, options: FromMemOptions): Promise<unknown>
 
 export type FromMemOptions = {
     /**
-     * What format does the code have?  Throws an error if the format is not
-     * "commonjs", "es", "umd", or "bare".  Default: "commonjs".
+     * What format does the code have?  "guess" means to read the closest
+     * package.json file looking for the "type" key.  Default: "commonjs".
      */
-    format?: "amd" | "bare" | "commonjs" | "es" | "globals" | "umd";
+    format?: "bare" | "commonjs" | "es" | "globals" | "guess";
     /**
      * What is the fully-qualified synthetic
      * filename for the code?  Most important is the directory, which is used to
