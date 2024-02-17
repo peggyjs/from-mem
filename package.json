@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
-    "test": "c8 node --experimental-vm-modules --test"
+    "test": "c8 node --stack-trace-limit=1000 --experimental-vm-modules --test"
   },
   "keywords": [
     "vm",

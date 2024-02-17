@@ -90,7 +90,7 @@ function requireString(code, dirname, options) {
  */
 function resolveIfNeeded(dirname, specifier) {
   if (specifier.startsWith(".")) {
-    specifier = path.resolve(dirname, specifier);
+    specifier = new URL(specifier, dirname).toString();
   }
   return specifier;
 }
@@ -113,20 +113,27 @@ async function importString(code, dirname, options) {
     throw new Error("Requires node.js 20.8+ or 21.");
   }
 
+  const fileUrl = options.filename.startsWith("file:")
+    ? options.filename
+    : url.pathToFileURL(options.filename).toString();
+  const dirUrl = dirname.startsWith("file:")
+    ? dirname
+    : url.pathToFileURL(dirname).toString() + "/";
+
   const mod = new vm.SourceTextModule(code, {
-    identifier: options.filename,
+    identifier: fileUrl,
     context: vm.createContext(options.context),
     initializeImportMeta(meta) {
-      meta.url = String(url.pathToFileURL(options.filename));
+      meta.url = fileUrl;
     },
     // @ts-expect-error Types in @types/node are wrong.
     importModuleDynamically(specifier) {
-      return import(resolveIfNeeded(dirname, specifier));
+      return import(resolveIfNeeded(dirUrl, specifier));
     },
   });
 
   await mod.link(async(specifier, referencingModule) => {
-    const resolvedSpecifier = resolveIfNeeded(dirname, specifier);
+    const resolvedSpecifier = resolveIfNeeded(dirUrl, specifier);
     const targetModule = await import(resolvedSpecifier);
     const exports = Object.keys(targetModule);
 
