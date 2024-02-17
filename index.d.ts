@@ -1,4 +1,4 @@
-declare function _exports(code: string, options?: FromMemOptions | undefined): Promise<unknown>;
+declare function _exports(code: string, options: FromMemOptions): Promise<unknown>;
 export = _exports;
 /**
  * Options for how to process code.

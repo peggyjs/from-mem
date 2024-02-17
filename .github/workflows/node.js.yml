@@ -33,6 +33,6 @@ jobs:
         run: npm run lint
       - name: Static analysis - check types
         if: matrix.node-version == '21.x' && matrix.os == 'ubuntu-latest'
-        run: npm run ts
+        run: npm run build
       - name: Test
         run: npm run test
