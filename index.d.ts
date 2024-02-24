@@ -1,14 +1,25 @@
-declare function _exports(code: string, options: FromMemOptions): Promise<unknown>;
-export = _exports;
+export = fromMem;
+/**
+ * Import or require the given code from memory.  Knows about the different
+ * Peggy output formats.  Returns the exports of the module.
+ *
+ * @param {string} code Code to import
+ * @param {FromMemOptions} options Options.  Most important is filename.
+ * @returns {Promise<unknown>} The evaluated code.
+ */
+declare function fromMem(code: string, options: FromMemOptions): Promise<unknown>;
+declare namespace fromMem {
+    export { guessModuleType, FromMemOptions, ModuleType };
+}
 /**
  * Options for how to process code.
  */
-export type FromMemOptions = {
+type FromMemOptions = {
     /**
-     * What format does the code have?  Throws an error if the format is not
-     * "commonjs", "es", "umd", or "bare".
+     * What format does the code have?  "guess" means to read the closest
+     * package.json file looking for the "type" key.
      */
-    format?: "amd" | "bare" | "commonjs" | "es" | "globals" | "umd" | undefined;
+    format?: "amd" | "bare" | "commonjs" | "es" | "globals" | "guess" | "umd" | undefined;
     /**
      * What is the fully-qualified synthetic
      * filename for the code?  Most important is the directory, which is used to
@@ -31,3 +42,16 @@ export type FromMemOptions = {
      */
     globalExport?: string | undefined;
 };
+/**
+ * Figure out the module type for the given file.  If no package.json is
+ * found, default to "commonjs".
+ *
+ * @param {string} filename Fully-qualified filename to start from.
+ * @returns {Promise<ModuleType>}
+ * @throws On invalid package.json
+ */
+declare function guessModuleType(filename: string): Promise<ModuleType>;
+declare namespace guessModuleType {
+    function clearCache(): void;
+}
+type ModuleType = "commonjs" | "es";

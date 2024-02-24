@@ -17,11 +17,11 @@
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",
   "devDependencies": {
-    "@peggyjs/eslint-config": "3.2.2",
-    "@types/node": "20.11.19",
-    "@types/semver": "7.5.7",
+    "@peggyjs/eslint-config": "3.2.3",
+    "@types/node": "20.11.20",
+    "@types/semver": "7.5.8",
     "c8": "9.1.0",
-    "eslint": "8.56.0",
+    "eslint": "8.57.0",
     "typescript": "5.3.3"
   },
   "packageManager": "pnpm@8.15.3",

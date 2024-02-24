@@ -152,11 +152,20 @@ async function importString(code, dirname, options) {
 }
 
 /**
+ * @typedef {"commonjs"|"es"} ModuleType
+ */
+
+/**
+ * @type Record<string, ModuleType>
+ */
+let cache = {};
+
+/**
  * Figure out the module type for the given file.  If no package.json is
  * found, default to "commonjs".
  *
  * @param {string} filename Fully-qualified filename to start from.
- * @returns {Promise<"commonjs"|"es">}
+ * @returns {Promise<ModuleType>}
  * @throws On invalid package.json
  */
 async function guessModuleType(filename) {
@@ -167,13 +176,23 @@ async function guessModuleType(filename) {
     default:
       // Fall-through
   }
+
+  /** @type {ModuleType} */
+  let res = "commonjs";
   let dir = fp.dir;
   let prev = undefined;
+  const pending = [];
   while (dir !== prev) {
+    const cached = cache[dir];
+    if (cached) {
+      return cached;
+    }
+    pending.push(dir);
     try {
       const pkg = await fs.readFile(path.join(dir, "package.json"), "utf8");
       const pkgj = JSON.parse(pkg);
-      return (pkgj.type === "module") ? "es" : "commonjs";
+      res = (pkgj.type === "module") ? "es" : "commonjs";
+      break;
     } catch (err) {
       // If the file just didn't exist, keep going.
       if (/** @type {NodeJS.ErrnoException} */ (err).code !== "ENOENT") {
@@ -183,8 +202,15 @@ async function guessModuleType(filename) {
     prev = dir;
     dir = path.dirname(dir);
   }
-  return "commonjs";
+  for (const p of pending) {
+    cache[p] = res;
+  }
+  return res;
 }
+
+guessModuleType.clearCache = function clearCache() {
+  cache = {};
+};
 
 /**
  * Import or require the given code from memory.  Knows about the different
@@ -194,7 +220,7 @@ async function guessModuleType(filename) {
  * @param {FromMemOptions} options Options.  Most important is filename.
  * @returns {Promise<unknown>} The evaluated code.
  */
-module.exports = async function fromMem(code, options) {
+async function fromMem(code, options) {
   options = {
     format: "commonjs",
     context: {},
@@ -239,4 +265,8 @@ module.exports = async function fromMem(code, options) {
     default:
       throw new Error(`Unsupported output format: "${options.format}"`);
   }
-};
+}
+
+fromMem.guessModuleType = guessModuleType;
+
+module.exports = fromMem;
