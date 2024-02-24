@@ -70,10 +70,19 @@ test("guess", async() => {
   });
   assert.equal(mjs2.default, 4);
 
+  // Hit the cache
+  const mjs3 = await fromMem("export default 4", {
+    filename: join(__dirname, "fixtures", "mjs", "test_guess4.js"),
+    format: "guess",
+  });
+  assert.equal(mjs3.default, 4);
+
   await assert.rejects(() => fromMem("export default 4", {
     filename: join(__dirname, "fixtures", "bad", "test_guess5.js"),
     format: "guess",
   }));
+
+  fromMem.guessModuleType.clearCache();
 });
 
 test("esm", async() => {
