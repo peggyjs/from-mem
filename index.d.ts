@@ -9,7 +9,7 @@ export = fromMem;
  */
 declare function fromMem(code: string, options: FromMemOptions): Promise<unknown>;
 declare namespace fromMem {
-    export { guessModuleType, FromMemOptions, ModuleType };
+    export { guessModuleType, SourceFormat, FromMemOptions, ModuleType };
 }
 /**
  * Options for how to process code.
@@ -19,7 +19,7 @@ type FromMemOptions = {
      * What format does the code have?  "guess" means to read the closest
      * package.json file looking for the "type" key.
      */
-    format?: "amd" | "bare" | "commonjs" | "es" | "globals" | "guess" | "umd" | undefined;
+    format?: SourceFormat | undefined;
     /**
      * What is the fully-qualified synthetic
      * filename for the code?  Most important is the directory, which is used to
@@ -41,6 +41,16 @@ type FromMemOptions = {
      * exported from the module?
      */
     globalExport?: string | undefined;
+    /**
+     * Specifies the line number offset that is
+     * displayed in stack traces produced by this script.
+     */
+    lineOffset?: number | undefined;
+    /**
+     * Specifies the first-line column number
+     * offset that is displayed in stack traces produced by this script.
+     */
+    columnOffset?: number | undefined;
 };
 /**
  * Figure out the module type for the given file.  If no package.json is
@@ -54,4 +64,5 @@ declare function guessModuleType(filename: string): Promise<ModuleType>;
 declare namespace guessModuleType {
     function clearCache(): void;
 }
+type SourceFormat = "amd" | "bare" | "cjs" | "commonjs" | "es" | "es6" | "esm" | "globals" | "guess" | "mjs" | "module" | "umd";
 type ModuleType = "commonjs" | "es";

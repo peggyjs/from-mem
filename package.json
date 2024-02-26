@@ -16,6 +16,9 @@
   ],
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",
+  "dependencies": {
+    "semver": "7.6.0"
+  },
   "devDependencies": {
     "@peggyjs/eslint-config": "3.2.3",
     "@types/node": "20.11.20",
@@ -24,11 +27,8 @@
     "eslint": "8.57.0",
     "typescript": "5.3.3"
   },
-  "packageManager": "pnpm@8.15.3",
+  "packageManager": "pnpm@8.15.4",
   "engines": {
     "node": ">=20.8"
-  },
-  "dependencies": {
-    "semver": "7.6.0"
   }
 }

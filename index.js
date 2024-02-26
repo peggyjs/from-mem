@@ -6,12 +6,12 @@
 // Ideas taken from the "module-from-string" and "eval" modules, neither of
 // which were situated correctly to be used as-is.
 
-const fs = require("node:fs/promises");
-const vm = require("node:vm");
 const { Module } = require("node:module");
+const fs = require("node:fs/promises");
 const path = require("node:path");
-const url = require("node:url");
 const semver = require("semver");
+const url = require("node:url");
+const vm = require("node:vm");
 
 // These already exist in a new, blank VM.  Date, JSON, NaN, etc.
 // Things from the core language.
@@ -38,10 +38,25 @@ const globalContext = Object.fromEntries(
 globalContext.console = console;
 
 /**
+ * @typedef {"amd"
+ * | "bare"
+ * | "cjs"
+ * | "commonjs"
+ * | "es"
+ * | "es6"
+ * | "esm"
+ * | "globals"
+ * | "guess"
+ * | "mjs"
+ * | "module"
+ * | "umd" } SourceFormat
+ */
+
+/**
  * Options for how to process code.
  *
  * @typedef {object} FromMemOptions
- * @property {"amd"|"bare"|"commonjs"|"es"|"globals"|"guess"|"umd"} [format="commonjs"]
+ * @property {SourceFormat} [format="commonjs"]
  *   What format does the code have?  "guess" means to read the closest
  *   package.json file looking for the "type" key.
  * @property {string} filename What is the fully-qualified synthetic
@@ -53,6 +68,10 @@ globalContext.console = console;
  *   properties that node gives to all modules.  (e.g. Buffer, process).
  * @property {string} [globalExport=null] For type "globals", what name is
  *   exported from the module?
+ * @property {number} [lineOffset=0] Specifies the line number offset that is
+ *   displayed in stack traces produced by this script.
+ * @property {number} [columnOffset=0] Specifies the first-line column number
+ *   offset that is displayed in stack traces produced by this script.
  */
 
 /**
@@ -69,7 +88,11 @@ function requireString(code, dirname, options) {
   const m = new Module(options.filename, module); // Current module is parent.
   // This is the function that will be called by `require()` in the parser.
   m.require = Module.createRequire(options.filename);
-  const script = new vm.Script(code, { filename: options.filename });
+  const script = new vm.Script(code, {
+    filename: options.filename,
+    lineOffset: options.lineOffset,
+    columnOffset: options.columnOffset,
+  });
   return script.runInNewContext({
     module: m,
     exports: m.exports,
@@ -123,6 +146,8 @@ async function importString(code, dirname, options) {
 
   const mod = new vm.SourceTextModule(code, {
     identifier: fileUrl,
+    lineOffset: options.lineOffset,
+    columnOffset: options.columnOffset,
     context: vm.createContext(options.context),
     initializeImportMeta(meta) {
       meta.url = fileUrl;
@@ -226,6 +251,8 @@ async function fromMem(code, options) {
     context: {},
     includeGlobals: true,
     globalExport: undefined,
+    lineOffset: 0,
+    columnOffset: 0,
     ...options,
   };
 
@@ -255,10 +282,15 @@ async function fromMem(code, options) {
   }
   switch (options.format) {
     case "bare":
+    case "cjs":
     case "commonjs":
     case "umd":
       return requireString(code, dirname, options);
     case "es":
+    case "es6":
+    case "esm":
+    case "module":
+    case "mjs":
       // Returns promise
       return importString(code, dirname, options);
     // I don't care enough about amd and globals to figure out how to load them.
