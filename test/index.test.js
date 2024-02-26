@@ -4,8 +4,11 @@ const assert = require("node:assert");
 const fromMem = require("../index.js");
 const { join, parse } = require("node:path");
 const { pathToFileURL } = require("node:url");
+const semver = require("semver");
 const test = require("node:test");
 const vm = require("node:vm");
+
+const is20 = semver.satisfies(process.version, ">=20.8");
 
 test("options", async() => {
   assert.equal(typeof fromMem, "function");
@@ -69,24 +72,26 @@ test("guess", async() => {
   });
   assert.equal(cjs3, 4);
 
-  const mjs = await fromMem("export default 4", {
-    filename: join(__dirname, "test_guess3.mjs"),
-    format: "guess",
-  });
-  assert.equal(mjs.default, 4);
+  if (is20) {
+    const mjs = await fromMem("export default 4", {
+      filename: join(__dirname, "test_guess3.mjs"),
+      format: "guess",
+    });
+    assert.equal(mjs.default, 4);
 
-  const mjs2 = await fromMem("export default 4", {
-    filename: join(__dirname, "fixtures", "mjs", "test_guess4.js"),
-    format: "guess",
-  });
-  assert.equal(mjs2.default, 4);
+    const mjs2 = await fromMem("export default 4", {
+      filename: join(__dirname, "fixtures", "mjs", "test_guess4.js"),
+      format: "guess",
+    });
+    assert.equal(mjs2.default, 4);
 
-  // Hit the cache
-  const mjs3 = await fromMem("export default 4", {
-    filename: join(__dirname, "fixtures", "mjs", "test_guess4.js"),
-    format: "guess",
-  });
-  assert.equal(mjs3.default, 4);
+    // Hit the cache
+    const mjs3 = await fromMem("export default 4", {
+      filename: join(__dirname, "fixtures", "mjs", "test_guess4.js"),
+      format: "guess",
+    });
+    assert.equal(mjs3.default, 4);
+  }
 
   await assert.rejects(() => fromMem("export default 4", {
     filename: join(__dirname, "fixtures", "bad", "test_guess5.js"),
@@ -96,7 +101,11 @@ test("guess", async() => {
   fromMem.guessModuleType.clearCache();
 });
 
-test("esm", async() => {
+test("esm", async t => {
+  if (!is20) {
+    t.skip(`Skipping esm tests on ${process.version}`);
+    return;
+  }
   const mjs4 = await fromMem("export default 5", {
     filename: join(__dirname, "test4.js"),
     format: "es",
