@@ -1,8 +1,9 @@
+.c8rc
+.github/
+.ncurc
+.vscode/
+coverage/
 eslint.config.js
 pnpm-lock.yaml
 test/
-coverage/
-.github/
-.vscode/
 tsconfig.json
-.c8rc

@@ -5,6 +5,7 @@ const fromMem = require("../index.js");
 const { join, parse } = require("node:path");
 const { pathToFileURL } = require("node:url");
 const test = require("node:test");
+const vm = require("node:vm");
 
 test("options", async() => {
   assert.equal(typeof fromMem, "function");
@@ -32,7 +33,17 @@ module.exports = foo() + 2`, {
     filename: join(__dirname, "test3.js"),
     format: "bare",
   }), (/** @type {Error} */ err) => {
-    assert(/test3\.js/.test(err.stack), err.stack);
+    assert.match(err.stack, /test3\.js/);
+    return true;
+  });
+
+  await assert.rejects(() => fromMem("throw new Error('foo')", {
+    filename: join(__dirname, "test4.js"),
+    format: "cjs",
+    lineOffset: 13,
+    columnOffset: 43,
+  }), (/** @type {Error} */ err) => {
+    assert.match(err.stack, /test4\.js:14:50/);
     return true;
   });
 });
@@ -121,4 +132,43 @@ export default 8`, {
     format: "es",
   });
   assert.equal(mjs8.default, 8);
+
+  await assert.rejects(() => fromMem("throw new Error('foo')", {
+    filename: join(__dirname, "test9.js"),
+    format: "mjs",
+    lineOffset: 13,
+    columnOffset: 43,
+  }), (/** @type {Error} */ err) => {
+    assert.match(err.stack, /test9\.js:14:50/);
+    return true;
+  });
+});
+
+test("version", async() => {
+  const ver = process.version;
+  Object.defineProperty(process, "version", {
+    value: "v18.0.0",
+  });
+  await assert.rejects(() => fromMem("43", {
+    filename: join(__dirname, "test10.js"),
+    format: "es6",
+  }), /Requires node.js 20.8\+ or 21\./);
+
+  // Reset
+  Object.defineProperty(process, "version", {
+    value: ver,
+  });
+});
+
+test("no SourceTextModule", async() => {
+  const stm = vm.SourceTextModule;
+  delete vm.SourceTextModule;
+
+  await assert.rejects(() => fromMem("44", {
+    filename: join(__dirname, "test11.js"),
+    format: "module",
+  }), /Start node with --experimental-vm-modules for this to work/);
+
+  // Reset
+  vm.SourceTextModule = stm;
 });
