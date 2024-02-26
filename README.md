@@ -81,11 +81,12 @@ export type FromMemOptions = {
 
 ## Caveats
 
-- This module has a strong requirement for node 20.8+ at runtime, due to a bug
-that crashes node in node's vm module that got fixed there and in 21.0.
+- This module has a strong requirement for node 20.8+ at runtime when using
+  the es6 format, due to a bug that crashes node in node's vm module that got
+  fixed there and in 21.0.  There is a runtime check to prevent the crash.
 - This module requires being run with the `--experimental-vm-modules` flag
-for node for the moment.  Hopefully, we will track changes to the API as they
-happen.
+  for node for the moment.  Hopefully, we will track changes to the API as
+  they happen.
 
 [![Tests](https://github.com/peggyjs/from-mem/actions/workflows/node.js.yml/badge.svg)](https://github.com/peggyjs/from-mem/actions/workflows/node.js.yml)
 [![codecov](https://codecov.io/gh/peggyjs/from-mem/graph/badge.svg?token=CWQ7GSH0ZI)](https://codecov.io/gh/peggyjs/from-mem)
