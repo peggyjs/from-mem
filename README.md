@@ -43,18 +43,18 @@ fromMem(code: string, options: FromMemOptions): Promise<unknown>
 export type FromMemOptions = {
     /**
      * What format does the code have?  "guess" means to read the closest
-     * package.json file looking for the "type" key.  Default: "commonjs".
+     * package.json file looking for the "type" key.  
+     * Default: "commonjs".
      */
     format?: "bare" | "commonjs" | "es" | "globals" | "guess";
     /**
-     * What is the fully-qualified synthetic
-     * filename for the code?  Most important is the directory, which is used to
-     * find modules that the code import's or require's.
+     * What is the fully-qualified synthetic filename for the code?  Most
+     * important is the directory, which is used to find modules that the
+     * code import's or require's.
      */
     filename: string;
     /**
-     * Variables to make availble in the global
-     * scope while code is being evaluated.
+     * Variables to make availble in the global scope while code is being evaluated.
      */
     context?: object;
     /**
@@ -63,10 +63,19 @@ export type FromMemOptions = {
      */
     includeGlobals?: boolean;
     /**
-     * For type "globals", what name is
-     * exported from the module?
+     * For type "globals", what name is exported from the module?
      */
     globalExport?: string;
+    /**
+     * Specifies the line number offset that is displayed in stack traces
+     * produced by this script.
+     */
+    lineOffset?: number | undefined;
+    /**
+     * Specifies the first-line column number ffset that is displayed in stack
+     * traces produced by this script.
+     */
+    columnOffset?: number | undefined;
 };
 ```
 
@@ -79,3 +88,4 @@ for node for the moment.  Hopefully, we will track changes to the API as they
 happen.
 
 [![Tests](https://github.com/peggyjs/from-mem/actions/workflows/node.js.yml/badge.svg)](https://github.com/peggyjs/from-mem/actions/workflows/node.js.yml)
+[![codecov](https://codecov.io/gh/peggyjs/from-mem/graph/badge.svg?token=CWQ7GSH0ZI)](https://codecov.io/gh/peggyjs/from-mem)
