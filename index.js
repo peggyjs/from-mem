@@ -15,18 +15,20 @@ const vm = require("node:vm");
 
 // These already exist in a new, blank VM.  Date, JSON, NaN, etc.
 // Things from the core language.
-const vmGlobals = new vm
+const vmGlobals = new Set(new vm
   .Script("Object.getOwnPropertyNames(globalThis)")
-  .runInNewContext()
-  .sort();
-vmGlobals.push("global", "globalThis", "sys");
+  .runInNewContext());
+vmGlobals.add("global");
+vmGlobals.add("globalThis");
+vmGlobals.add("sys");
 
 // These are the things that are normally in the environment, that vm doesn't
 // make available.  This that you expect to be available in a node environment
-// that aren't in the laguage itself.
+// that aren't in the laguage itself.  There are a lot more things in this list
+// than you expect, like setTimeout and structuredClone.
 const neededKeys = Object
   .getOwnPropertyNames(global)
-  .filter(k => !vmGlobals.includes(k))
+  .filter(k => !vmGlobals.has(k))
   .sort();
 const globalContext = Object.fromEntries(
   neededKeys.map(k => [k, global[
@@ -34,7 +36,6 @@ const globalContext = Object.fromEntries(
   ]])
 );
 
-// In node <15, console is in vmGlobals.
 globalContext.console = console;
 
 /**
@@ -56,18 +57,19 @@ globalContext.console = console;
  * Options for how to process code.
  *
  * @typedef {object} FromMemOptions
- * @property {SourceFormat} [format="commonjs"]
- *   What format does the code have?  "guess" means to read the closest
- *   package.json file looking for the "type" key.
- * @property {string} filename What is the fully-qualified synthetic
- *   filename for the code?  Most important is the directory, which is used to
- *   find modules that the code import's or require's.
- * @property {object} [context={}] Variables to make availble in the global
- *   scope while code is being evaluated.
+ * @property {SourceFormat} [format="commonjs"] What format does the code
+ *   have?  "guess" means to read the closest package.json file looking for
+ *   the "type" key.  "globals", "amd", and "bare" are not actually supported.
+ * @property {Record<string, any>} [env] If specified, use this instead of the
+ *   current values in process.env.  Works if includeGlobals is false by
+ *   creating an otherwise-empty process instance.
+ * @property {string} filename What is the fully-qualified synthetic filename
+ *   for the code?  Most important is the directory, which is used to find
+ *   modules that the code import's or require's.
+ * @property {Record<string, any>} [context={}] Variables to make availble in
+ *   the global scope while code is being evaluated.
  * @property {boolean} [includeGlobals=true] Include the typical global
  *   properties that node gives to all modules.  (e.g. Buffer, process).
- * @property {string} [globalExport=null] For type "globals", what name is
- *   exported from the module?
  * @property {number} [lineOffset=0] Specifies the line number offset that is
  *   displayed in stack traces produced by this script.
  * @property {number} [columnOffset=0] Specifies the first-line column number
@@ -248,9 +250,8 @@ guessModuleType.clearCache = function clearCache() {
 async function fromMem(code, options) {
   options = {
     format: "commonjs",
-    context: {},
+    env: undefined,
     includeGlobals: true,
-    globalExport: undefined,
     lineOffset: 0,
     columnOffset: 0,
     ...options,
@@ -261,11 +262,30 @@ async function fromMem(code, options) {
       ...globalContext,
       ...options.context,
     };
+  } else {
+    // Put this here instead of in the defaults above so that typescript
+    // can see it.
+    options.context = options.context || {};
   }
 
-  // @ts-expect-error Context is always non-null
+  // Make sure env changes don't stick.  This isn't a security measure, it's
+  // to prevent mistakes.  There are probably a few other places where
+  // mistakes are likely, and the same treatment should be given.
+  if (options.context.process) {
+    if (options.context.process === process) {
+      options.context.process = { ...process };
+    }
+    options.context.process.env = options.env || {
+      ...options.context.process.env,
+    };
+  } else if (options.env) {
+    options.context.process = {
+      version: process.version,
+      env: { ...options.env },
+    };
+  }
+
   options.context.global = options.context;
-  // @ts-expect-error Context is always non-null
   options.context.globalThis = options.context;
 
   if (!options.filename) {

@@ -16,31 +16,33 @@ declare namespace fromMem {
  */
 type FromMemOptions = {
     /**
-     * What format does the code have?  "guess" means to read the closest
-     * package.json file looking for the "type" key.
+     * What format does the code
+     * have?  "guess" means to read the closest package.json file looking for
+     * the "type" key.  "globals", "amd", and "bare" are not actually supported.
      */
     format?: SourceFormat | undefined;
     /**
-     * What is the fully-qualified synthetic
-     * filename for the code?  Most important is the directory, which is used to
-     * find modules that the code import's or require's.
+     * If specified, use this instead of the
+     * current values in process.env.  Works if includeGlobals is false by
+     * creating an otherwise-empty process instance.
+     */
+    env?: Record<string, any> | undefined;
+    /**
+     * What is the fully-qualified synthetic filename
+     * for the code?  Most important is the directory, which is used to find
+     * modules that the code import's or require's.
      */
     filename: string;
     /**
-     * Variables to make availble in the global
-     * scope while code is being evaluated.
+     * Variables to make availble in
+     * the global scope while code is being evaluated.
      */
-    context?: object | undefined;
+    context?: Record<string, any> | undefined;
     /**
      * Include the typical global
      * properties that node gives to all modules.  (e.g. Buffer, process).
      */
     includeGlobals?: boolean | undefined;
-    /**
-     * For type "globals", what name is
-     * exported from the module?
-     */
-    globalExport?: string | undefined;
     /**
      * Specifies the line number offset that is
      * displayed in stack traces produced by this script.

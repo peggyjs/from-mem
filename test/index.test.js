@@ -181,3 +181,39 @@ test("no SourceTextModule", async() => {
   // Reset
   vm.SourceTextModule = stm;
 });
+
+test("process.env", async() => {
+  // No process gives the right error
+  await assert.rejects(() => fromMem("module.exports = process", {
+    filename: join(__dirname, "test11.js"),
+    format: "cjs",
+    includeGlobals: false,
+  }), /process is not defined/);
+
+  // Pick up current value
+  process.env.___TEST1___ = "12";
+  assert.equal((await fromMem("module.exports = process.env.___TEST1___", {
+    filename: join(__dirname, "test12.js"),
+    format: "cjs",
+  })), "12");
+  delete process.env.___TEST1___;
+
+  // Anti-pollution
+  assert.equal((await fromMem(`
+process.env.___TEST2___ = "13";
+module.exports = process.env.___TEST2___`, {
+    filename: join(__dirname, "test13.js"),
+    format: "cjs",
+  })), "13");
+  assert.equal(typeof process.env.___TEST2___, "undefined");
+
+  // Fake process
+  assert.equal((await fromMem("module.exports = process.env.___TEST3___", {
+    filename: join(__dirname, "test14.js"),
+    format: "cjs",
+    includeGlobals: false,
+    env: {
+      ___TEST3___: "14",
+    },
+  })), "14");
+});

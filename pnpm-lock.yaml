@@ -11,8 +11,8 @@ dependencies:
 
 devDependencies:
   '@peggyjs/eslint-config':
-    specifier: 3.2.3
-    version: 3.2.3(eslint@8.57.0)(typescript@5.3.3)
+    specifier: 3.2.4
+    version: 3.2.4(eslint@8.57.0)(typescript@5.3.3)
   '@types/node':
     specifier: 20.11.20
     version: 20.11.20
@@ -139,8 +139,8 @@ packages:
       fastq: 1.17.1
     dev: true
 
-  /@peggyjs/eslint-config@3.2.3(eslint@8.57.0)(typescript@5.3.3):
-    resolution: {integrity: sha512-NlYOPUHuR9lSmd8OimdrH+buCrtVILfsEun63ZmJqokpiVBE+Cpb2z9joIsS1LHGCZWsYQdr79xFbOstq0U/ew==}
+  /@peggyjs/eslint-config@3.2.4(eslint@8.57.0)(typescript@5.3.3):
+    resolution: {integrity: sha512-Mj6F0U2Sf8Pc3c9HA3N+4GswSWf4yaeiRQV7AmdUZNLUzieDllMLf9QWzV/vSkjo/FiDa9Yu2DOTmiEdpxJ5nA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@typescript-eslint/eslint-plugin': ~7
