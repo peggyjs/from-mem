@@ -12,6 +12,19 @@ declare namespace fromMem {
     export { guessModuleType, SourceFormat, FromMemOptions, ModuleType };
 }
 /**
+ * Figure out the module type for the given file.  If no package.json is
+ * found, default to "commonjs".
+ *
+ * @param {string} filename Fully-qualified filename to start from.
+ * @returns {Promise<ModuleType>}
+ * @throws On invalid package.json
+ */
+declare function guessModuleType(filename: string): Promise<ModuleType>;
+declare namespace guessModuleType {
+    function clearCache(): void;
+}
+type SourceFormat = "amd" | "bare" | "cjs" | "commonjs" | "es" | "es6" | "esm" | "globals" | "guess" | "mjs" | "module" | "umd";
+/**
  * Options for how to process code.
  */
 type FromMemOptions = {
@@ -54,17 +67,4 @@ type FromMemOptions = {
      */
     columnOffset?: number | undefined;
 };
-/**
- * Figure out the module type for the given file.  If no package.json is
- * found, default to "commonjs".
- *
- * @param {string} filename Fully-qualified filename to start from.
- * @returns {Promise<ModuleType>}
- * @throws On invalid package.json
- */
-declare function guessModuleType(filename: string): Promise<ModuleType>;
-declare namespace guessModuleType {
-    function clearCache(): void;
-}
-type SourceFormat = "amd" | "bare" | "cjs" | "commonjs" | "es" | "es6" | "esm" | "globals" | "guess" | "mjs" | "module" | "umd";
 type ModuleType = "commonjs" | "es";

@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
-    "test": "c8 node --stack-trace-limit=1000 --experimental-vm-modules --test"
+    "test": "c8 node --stack-trace-limit=1000 --experimental-vm-modules --test",
+    "ci": "npm run build && npm run lint && npm run test"
   },
   "keywords": [
     "vm",
@@ -17,17 +18,27 @@
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",
   "dependencies": {
-    "semver": "7.6.0"
+    "semver": "7.6.2"
   },
   "devDependencies": {
-    "@peggyjs/eslint-config": "3.2.4",
-    "@types/node": "20.11.20",
+    "@peggyjs/eslint-config": "4.0.1",
+    "@types/node": "20.14.11",
     "@types/semver": "7.5.8",
-    "c8": "9.1.0",
-    "eslint": "8.57.0",
-    "typescript": "5.3.3"
+    "c8": "10.1.2",
+    "eslint": "9.7.0",
+    "typescript": "5.5.3"
   },
-  "packageManager": "pnpm@8.15.4",
+  "overrides": {
+    "@typescript-eslint/utils": "8.0.0-alpha.44",
+    "@typescript-eslint/parser": "8.0.0-alpha.44"
+  },
+  "pnpm": {
+    "overrides": {
+      "@typescript-eslint/utils": "8.0.0-alpha.44",
+      "@typescript-eslint/parser": "8.0.0-alpha.44"
+    }
+  },
+  "packageManager": "pnpm@9.5.0",
   "engines": {
     "node": ">=18"
   }

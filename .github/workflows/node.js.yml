@@ -38,4 +38,4 @@ jobs:
         run: npm run test
       - uses: codecov/codecov-action@v3
         with:
-          files: coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}
