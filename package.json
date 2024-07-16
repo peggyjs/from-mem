@@ -17,7 +17,10 @@
   ],
   "author": "Joe Hildebrand <joe-github@cursive.net>",
   "license": "MIT",
-  "repository": "peggyjs/from-mem",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peggyjs/from-mem.git"
+  },
   "dependencies": {
     "semver": "7.6.2"
   },
