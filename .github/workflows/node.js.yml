@@ -28,14 +28,8 @@ jobs:
           cache: pnpm
       - name: Install dependencies
         run: pnpm install
-      - name: Check coding standards
-        if: matrix.node-version == '21.x' && matrix.os == 'ubuntu-latest'
-        run: npm run lint
-      - name: Static analysis - check types
-        if: matrix.node-version == '21.x' && matrix.os == 'ubuntu-latest'
-        run: npm run build
       - name: Test
-        run: npm run test
-      - uses: codecov/codecov-action@v3
+        run: npm run ci
+      - uses: codecov/codecov-action@v4
         with:
-          files: coverage/lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}

@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "lint": "eslint .",
-    "test": "c8 node --stack-trace-limit=1000 --experimental-vm-modules --test"
+    "test": "c8 node --stack-trace-limit=1000 --experimental-vm-modules --test",
+    "ci": "npm run build && npm run lint && npm run test"
   },
   "keywords": [
     "vm",
