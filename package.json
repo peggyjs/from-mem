@@ -1,6 +1,6 @@
 {
   "name": "@peggyjs/from-mem",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "Load a string as if it was an esm or commonjs module with a given filename.",
   "main": "index.js",
   "scripts": {
