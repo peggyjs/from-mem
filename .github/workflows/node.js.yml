@@ -5,14 +5,15 @@ on:
     branches:
       - main
   pull_request:
-    branches: ['*']
+    branches:
+      - main
 
 jobs:
   build:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 21.x]
+        node-version: [18.x, 20.x, 22.x]
         os: [ubuntu-latest, windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
@@ -29,13 +30,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Check coding standards
-        if: matrix.node-version == '21.x' && matrix.os == 'ubuntu-latest'
+        if: matrix.node-version == '22.x' && matrix.os == 'ubuntu-latest'
         run: npm run lint
       - name: Static analysis - check types
-        if: matrix.node-version == '21.x' && matrix.os == 'ubuntu-latest'
+        if: matrix.node-version == '22.x' && matrix.os == 'ubuntu-latest'
         run: npm run build
       - name: Test
         run: npm run test
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
