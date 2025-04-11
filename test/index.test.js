@@ -176,7 +176,7 @@ test("no SourceTextModule", async() => {
   await assert.rejects(() => fromMem("44", {
     filename: join(__dirname, "test11.js"),
     format: "module",
-  }), /Start node with --experimental-vm-modules for this to work/);
+  }), /Start node with `node --experimental-vm-modules` in order to import ES6 modules/);
 
   // Reset
   vm.SourceTextModule = stm;
