@@ -122,6 +122,15 @@ function resolveIfNeeded(dirname, specifier) {
 }
 
 /**
+ * Is importing from an ES6 module supported in the current environment?
+ *
+ * @returns {boolean}
+ */
+function isImportSupported() {
+  return Boolean(vm.SourceTextModule);
+}
+
+/**
  * Treat the given code as a node module as if import had been called
  * on a file containing the code.
  *
@@ -131,8 +140,8 @@ function resolveIfNeeded(dirname, specifier) {
  * @returns {Promise<unknown>} The module exports from code
  */
 async function importString(code, dirname, options) {
-  if (!vm.SourceTextModule) {
-    throw new Error("Start node with --experimental-vm-modules for this to work");
+  if (!isImportSupported()) {
+    throw new Error("Start node with `node --experimental-vm-modules` in order to import ES6 modules");
   }
 
   if (!semver.satisfies(process.version, ">=20.8")) {
@@ -154,7 +163,6 @@ async function importString(code, dirname, options) {
     initializeImportMeta(meta) {
       meta.url = fileUrl;
     },
-    // @ts-expect-error Types in @types/node are wrong.
     importModuleDynamically(specifier) {
       return import(resolveIfNeeded(dirUrl, specifier));
     },
@@ -320,5 +328,6 @@ async function fromMem(code, options) {
 }
 
 fromMem.guessModuleType = guessModuleType;
+fromMem.isImportSupported = isImportSupported;
 
 module.exports = fromMem;
