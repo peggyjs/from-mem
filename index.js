@@ -172,7 +172,9 @@ async function importString(code, dirname, options) {
 
   await mod.link(async(specifier, referencingModule) => {
     const resolvedSpecifier = resolveIfNeeded(dirUrl, specifier);
-    const targetModule = await import(resolvedSpecifier);
+    const targetModule = await import(
+      /* webpackIgnore: true */ resolvedSpecifier
+    );
     const exports = Object.keys(targetModule);
 
     // DO NOT change function to () =>, or `this` will be wrong.
