@@ -164,7 +164,9 @@ async function importString(code, dirname, options) {
       meta.url = fileUrl;
     },
     importModuleDynamically(specifier) {
-      return import(resolveIfNeeded(dirUrl, specifier));
+      return import(
+        /* webpackIgnore: true */ resolveIfNeeded(dirUrl, specifier)
+      );
     },
   });
 
@@ -228,7 +230,7 @@ async function guessModuleType(filename) {
       const pkgj = JSON.parse(pkg);
       res = (pkgj.type === "module") ? "es" : "commonjs";
       break;
-    } catch (err) {
+    } catch(err) {
       // If the file just didn't exist, keep going.
       if (/** @type {NodeJS.ErrnoException} */ (err).code !== "ENOENT") {
         throw err;
