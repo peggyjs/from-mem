@@ -1,7 +1,7 @@
 "use strict";
 
 const assert = require("node:assert");
-const fromMem = require("../index.js");
+const fromMem = require("../lib/index.js");
 const { join, parse } = require("node:path");
 const { pathToFileURL } = require("node:url");
 const semver = require("semver");
