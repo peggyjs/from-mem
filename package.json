@@ -3,11 +3,16 @@
   "version": "2.0.3",
   "description": "Load a string as if it was an esm or commonjs module with a given filename.",
   "main": "./lib/index.js",
+  "types": "./types/index.d.ts",
+  "files": [
+    "lib",
+    "types"
+  ],
   "scripts": {
     "clean": "rimraf coverage docs lib/*.d.ts",
     "build": "tsc",
     "lint": "eslint .",
-    "test": "c8 node --stack-trace-limit=1000 --experimental-vm-modules --test",
+    "test": "c8 node --experimental-vm-modules --test",
     "ci": "npm run build && npm run lint && npm run test"
   },
   "keywords": [
