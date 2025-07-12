@@ -23,19 +23,32 @@ npm install @peggyjs/from-mem
 
 ```js
 import fromMem from "@peggyjs/from-mem"; // or require("@peggyjs/from-mem")
-const mod = await fromMem(`
-import foo from "../foo.js" // Loads ./test/foo.js
-export function bar() {
-  return foo() + 2;
+const consoleOutput = {};
+const result = await fromMem(`
+import foo from "../foo.js"; // Loads ./test/foo.js
+
+console.log("hi");
+export async function bar() {
+  return await foo() + 2;
 }
 `, {
   filename: path.join(__dirname, "test", "fixtures", "test.js"),
   format: "es",
+  consoleOutput,
+  exec: `
+console.log("there");
+const b = await IMPORTED.bar();
+return b + arg;
+`;
+  arg: 12,
 });
-mod.bar();
+
+// consoleOutput.out === "hi\nthere\n"
 ```
 
-"filename" is the only required option.
+`filename` is the only required option, unless you are processing an ES6 module
+and your runtime does not have --experimental_vm_modules set.  In that case,
+you must pass in an `exec` option, and may pass in an `arg` also.
 
 ```ts
 fromMem(code: string, options: FromMemOptions): Promise<unknown>
@@ -43,7 +56,7 @@ fromMem(code: string, options: FromMemOptions): Promise<unknown>
 export type FromMemOptions = {
     /**
      * What format does the code have?  "guess" means to read the closest
-     * package.json file looking for the "type" key.  
+     * package.json file looking for the "type" key.
      * Default: "commonjs".
      */
     format?: "bare" | "commonjs" | "es" | "globals" | "guess";
@@ -58,7 +71,7 @@ export type FromMemOptions = {
      */
     context?: object;
     /**
-     * Include the typical global properties that node gives to all modules.  
+     * Include the typical global properties that node gives to all modules.
      * (e.g. Buffer, process). Default: true
      */
     includeGlobals?: boolean;
@@ -76,6 +89,29 @@ export type FromMemOptions = {
      * traces produced by this script.
      */
     columnOffset?: number | undefined;
+    /**
+     * If specified, execute this code on the resulting module in an async
+     * context.
+     */
+    exec?: string | undefined;
+    /**
+     * Will be available as "arg" in the exec code.
+     */
+    arg?: unknown;
+    /**
+     * If specified, the out and err properties will be filled in with
+     * output from the console.* functions.
+     */
+    consoleOutput?: ConsoleOutErr | undefined;
+    /**
+     * Set color
+     * support for this Console instance. Setting to true enables coloring while
+     * inspecting values. Setting to false disables coloring while inspecting
+     * values. Setting to 'auto' makes color support depend on the value of the
+     * isTTY property and the value returned by getColorDepth() on the
+     * respective stream.  Ignored if consoleOutput is not set.
+     */
+    colorMode?: boolean | "auto" | undefined;
 };
 ```
 
@@ -84,9 +120,6 @@ export type FromMemOptions = {
 - This module has a strong requirement for node 20.8+ at runtime when using
   the es6 format, due to a bug that crashes node in node's vm module that got
   fixed there and in 21.0.  There is a runtime check to prevent the crash.
-- This module requires being run with the `--experimental-vm-modules` flag
-  for node for the moment.  Hopefully, we will track changes to the API as
-  they happen.
 
 [![Tests](https://github.com/peggyjs/from-mem/actions/workflows/node.js.yml/badge.svg)](https://github.com/peggyjs/from-mem/actions/workflows/node.js.yml)
 [![codecov](https://codecov.io/gh/peggyjs/from-mem/graph/badge.svg?token=CWQ7GSH0ZI)](https://codecov.io/gh/peggyjs/from-mem)
