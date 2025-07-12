@@ -62,6 +62,7 @@ module.exports = foo() + 2`, {
     filename: "test6.cjs",
     exec: "return IMPORTED",
     consoleOutput,
+    colorMode: false,
   }), /after console/);
   assert.equal(consoleOutput.out, "1\n");
 
@@ -70,6 +71,7 @@ module.exports = foo() + 2`, {
     filename: "test7.cjs",
     exec: "console.log(2); throw Error('after console2')",
     consoleOutput: consoleOutput2,
+    colorMode: false,
   }), /after console2/);
   assert.equal(consoleOutput2.out, "1\n2\n");
 
@@ -206,6 +208,7 @@ export default 9`, {
     filename: join(__dirname, "test10.mjs"),
     exec: "console.log(2)",
     consoleOutput,
+    colorMode: false,
   });
   assert.equal(consoleOutput.out, "1\n2\n");
 
@@ -214,6 +217,7 @@ export default 9`, {
     filename: join(__dirname, "test11.mjs"),
     exec: "console.error(2)",
     consoleOutput: consoleOutput2,
+    colorMode: false,
   }), /after console/);
   assert.equal(consoleOutput2.err, "1\n");
 
@@ -222,6 +226,7 @@ export default 9`, {
     filename: join(__dirname, "test12.mjs"),
     exec: "console.log(2); throw new Error('after console2');",
     consoleOutput: consoleOutput3,
+    colorMode: false,
   }), /after console2/);
   assert.equal(consoleOutput3.out, "1\n2\n");
 });

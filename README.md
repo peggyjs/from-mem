@@ -103,6 +103,15 @@ export type FromMemOptions = {
      * output from the console.* functions.
      */
     consoleOutput?: ConsoleOutErr | undefined;
+    /**
+     * Set color
+     * support for this Console instance. Setting to true enables coloring while
+     * inspecting values. Setting to false disables coloring while inspecting
+     * values. Setting to 'auto' makes color support depend on the value of the
+     * isTTY property and the value returned by getColorDepth() on the
+     * respective stream.  Ignored if consoleOutput is not set.
+     */
+    colorMode?: boolean | "auto" | undefined;
 };
 ```
 
