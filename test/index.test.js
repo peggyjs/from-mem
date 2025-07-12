@@ -49,6 +49,35 @@ module.exports = foo() + 2`, {
     assert.match(err.stack, /test4\.js:14:50/);
     return true;
   });
+
+  const cjs3 = await fromMem("exports.foo = 4; 1", {
+    filename: "test5.cjs",
+    exec: "return IMPORTED.foo + arg",
+    arg: 12,
+  });
+  assert.equal(cjs3, 16);
+
+  const consoleOutput = {};
+  await assert.rejects(fromMem("console.log(1); throw Error('after console')", {
+    filename: "test6.cjs",
+    exec: "return IMPORTED",
+    consoleOutput,
+  }), /after console/);
+  assert.equal(consoleOutput.out, "1\n");
+
+  const consoleOutput2 = {};
+  await assert.rejects(fromMem("console.log(1)", {
+    filename: "test7.cjs",
+    exec: "console.log(2); throw Error('after console2')",
+    consoleOutput: consoleOutput2,
+  }), /after console2/);
+  assert.equal(consoleOutput2.out, "1\n2\n");
+
+  await fromMem("console.log('expected output')", {
+    filename: "test8.cjs",
+    exec: "1;",
+    includeGlobals: false,
+  });
 });
 
 test("guess", async() => {
@@ -76,26 +105,30 @@ test("guess", async() => {
     const mjs = await fromMem("export default 4", {
       filename: join(__dirname, "test_guess3.mjs"),
       format: "guess",
+      exec: "return IMPORTED.default",
     });
-    assert.equal(mjs.default, 4);
+    assert.equal(mjs, 4);
 
     const mjs2 = await fromMem("export default 4", {
       filename: join(__dirname, "fixtures", "mjs", "test_guess4.js"),
       format: "guess",
+      exec: "return IMPORTED.default",
     });
-    assert.equal(mjs2.default, 4);
+    assert.equal(mjs2, 4);
 
     // Hit the cache
     const mjs3 = await fromMem("export default 4", {
       filename: join(__dirname, "fixtures", "mjs", "test_guess4.js"),
       format: "guess",
+      exec: "return IMPORTED.default",
     });
-    assert.equal(mjs3.default, 4);
+    assert.equal(mjs3, 4);
   }
 
   await assert.rejects(() => fromMem("export default 4", {
     filename: join(__dirname, "fixtures", "bad", "test_guess5.js"),
     format: "guess",
+    exec: "return IMPORTED",
   }));
 
   fromMem.guessModuleType.clearCache();
@@ -109,48 +142,88 @@ test("esm", async t => {
   const mjs4 = await fromMem("export default 5", {
     filename: join(__dirname, "test4.js"),
     format: "es",
+    exec: "return IMPORTED.default + arg",
+    arg: 2,
   });
-  assert.equal(mjs4.default, 5);
+  assert.equal(mjs4, 7);
 
   const mjs5 = await fromMem(`
 import {foo} from './fixtures/example.mjs';
 export default foo();`, {
     filename: join(__dirname, "test5.js"),
     format: "es",
+    exec: "return IMPORTED.default",
   });
-  assert.equal(mjs5.default, 6);
+  assert.equal(mjs5, 6);
 
   const mjs6 = await fromMem(`
 export default import.meta.url`, {
     filename: join(__dirname, "test6.js"),
     format: "es",
+    exec: "return IMPORTED.default",
   });
-  assert.match(mjs6.default, /test6\.js$/);
+  assert.match(mjs6, /test6\.js$/);
 
   const mjs7 = await fromMem(`
 const {foo} = await import('./fixtures/example.mjs');
 export default foo();`, {
     filename: join(__dirname, "test7.js"),
     format: "es",
+    exec: "return IMPORTED.default",
   });
-  assert.equal(mjs7.default, 6);
+  assert.equal(mjs7, 6);
 
   const mjs8 = await fromMem(`
 export default 8`, {
     filename: pathToFileURL(join(__dirname, "test8.js")).toString(),
     format: "es",
+    exec: "return IMPORTED.default",
   });
-  assert.equal(mjs8.default, 8);
+  assert.equal(mjs8, 8);
 
   await assert.rejects(() => fromMem("throw new Error('foo')", {
     filename: join(__dirname, "test9.js"),
     format: "mjs",
     lineOffset: 13,
     columnOffset: 43,
+    exec: "return IMPORTED.default",
   }), (/** @type {Error} */ err) => {
     assert.match(err.stack, /test9\.js:14:50/);
     return true;
   });
+
+  if (process.execArgv.includes("--experimental-vm-modules")) {
+    const mjs9 = await fromMem(`
+export default 9`, {
+      filename: pathToFileURL(join(__dirname, "test9.js")).toString(),
+      format: "es",
+    });
+    assert.equal(mjs9.default, 9);
+  }
+
+  const consoleOutput = {};
+  await fromMem("console.log(1)", {
+    filename: join(__dirname, "test10.mjs"),
+    exec: "console.log(2)",
+    consoleOutput,
+  });
+  assert.equal(consoleOutput.out, "1\n2\n");
+
+  const consoleOutput2 = {};
+  await assert.rejects(() => fromMem("console.error(1); throw new Error('after console');", {
+    filename: join(__dirname, "test11.mjs"),
+    exec: "console.error(2)",
+    consoleOutput: consoleOutput2,
+  }), /after console/);
+  assert.equal(consoleOutput2.err, "1\n");
+
+  const consoleOutput3 = {};
+  await assert.rejects(() => fromMem("console.log(1)", {
+    filename: join(__dirname, "test12.mjs"),
+    exec: "console.log(2); throw new Error('after console2');",
+    consoleOutput: consoleOutput3,
+  }), /after console2/);
+  assert.equal(consoleOutput3.out, "1\n2\n");
 });
 
 test("version", async() => {
@@ -161,6 +234,7 @@ test("version", async() => {
   await assert.rejects(() => fromMem("43", {
     filename: join(__dirname, "test10.js"),
     format: "es6",
+    exec: "return IMPORTED.default",
   }), /Requires node.js 20.8\+ or 21\./);
 
   // Reset
