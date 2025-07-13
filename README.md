@@ -46,74 +46,11 @@ return b + arg;
 // consoleOutput.out === "hi\nthere\n"
 ```
 
-`filename` is the only required option, unless you are processing an ES6 module
-and your runtime does not have --experimental_vm_modules set.  In that case,
-you must pass in an `exec` option, and may pass in an `arg` also.
+`filename` is the only required option, unless you are processing an ES6
+module and your runtime does not have --experimental_vm_modules set.  In that
+case, you must pass in an `exec` option, and may pass in an `arg` also.
 
-```ts
-fromMem(code: string, options: FromMemOptions): Promise<unknown>
-
-export type FromMemOptions = {
-    /**
-     * What format does the code have?  "guess" means to read the closest
-     * package.json file looking for the "type" key.
-     * Default: "commonjs".
-     */
-    format?: "bare" | "commonjs" | "es" | "globals" | "guess";
-    /**
-     * What is the fully-qualified synthetic filename for the code?  Most
-     * important is the directory, which is used to find modules that the
-     * code import's or require's.
-     */
-    filename: string;
-    /**
-     * Variables to make availble in the global scope while code is being evaluated.
-     */
-    context?: object;
-    /**
-     * Include the typical global properties that node gives to all modules.
-     * (e.g. Buffer, process). Default: true
-     */
-    includeGlobals?: boolean;
-    /**
-     * For type "globals", what name is exported from the module?
-     */
-    globalExport?: string;
-    /**
-     * Specifies the line number offset that is displayed in stack traces
-     * produced by this script.
-     */
-    lineOffset?: number | undefined;
-    /**
-     * Specifies the first-line column number ffset that is displayed in stack
-     * traces produced by this script.
-     */
-    columnOffset?: number | undefined;
-    /**
-     * If specified, execute this code on the resulting module in an async
-     * context.
-     */
-    exec?: string | undefined;
-    /**
-     * Will be available as "arg" in the exec code.
-     */
-    arg?: unknown;
-    /**
-     * If specified, the out and err properties will be filled in with
-     * output from the console.* functions.
-     */
-    consoleOutput?: ConsoleOutErr | undefined;
-    /**
-     * Set color
-     * support for this Console instance. Setting to true enables coloring while
-     * inspecting values. Setting to false disables coloring while inspecting
-     * values. Setting to 'auto' makes color support depend on the value of the
-     * isTTY property and the value returned by getColorDepth() on the
-     * respective stream.  Ignored if consoleOutput is not set.
-     */
-    colorMode?: boolean | "auto" | undefined;
-};
-```
+Full [API docs](http://peggyjs.github.io/from-mem/) are available.
 
 ## Caveats
 

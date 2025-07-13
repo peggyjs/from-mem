@@ -133,7 +133,7 @@ test("guess", async() => {
     exec: "return IMPORTED",
   }));
 
-  fromMem.guessModuleType.clearCache();
+  fromMem.clearModuleTypeCache();
 });
 
 test("esm", async t => {
