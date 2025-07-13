@@ -9,7 +9,7 @@
     "types"
   ],
   "scripts": {
-    "clean": "rimraf coverage docs lib/*.d.ts",
+    "clean": "rimraf coverage docs types",
     "build": "tsc",
     "lint": "eslint .",
     "test": "c8 npm run test:both",
