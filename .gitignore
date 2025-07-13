@@ -1,5 +1,6 @@
-node_modules/
-coverage/
 .vscode/
 *.d.ts
+coverage/
+docs/
+node_modules/
 types/

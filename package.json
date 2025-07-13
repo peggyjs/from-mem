@@ -10,11 +10,12 @@
   ],
   "scripts": {
     "clean": "rimraf coverage docs types",
+    "docs": "typedoc",
     "build": "tsc",
     "lint": "eslint .",
     "test": "c8 npm run test:both",
     "test:both": "node --test && node --test --experimental-vm-modules",
-    "ci": "npm run build && npm run lint && npm run test"
+    "ci": "npm run build && npm run lint && npm run test && npm run docs"
   },
   "keywords": [
     "vm",
@@ -38,6 +39,7 @@
     "c8": "10.1.3",
     "eslint": "9.31.0",
     "rimraf": "6.0.1",
+    "typedoc": "0.28.7",
     "typescript": "5.8.3"
   },
   "packageManager": "pnpm@10.13.1",
