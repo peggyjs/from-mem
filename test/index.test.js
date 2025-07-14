@@ -10,7 +10,7 @@ const vm = require("node:vm");
 
 const is20 = semver.satisfies(process.version, ">=20.8");
 
-test("options", async() => {
+test("options", async () => {
   assert.equal(typeof fromMem, "function");
   await assert.rejects(() => fromMem(""), /filename is required/);
   await assert.rejects(() => fromMem("", {
@@ -19,7 +19,7 @@ test("options", async() => {
   }), /Unsupported output format/);
 });
 
-test("commonjs", async() => {
+test("commonjs", async () => {
   const cjs = await fromMem("module.exports = 4", {
     filename: "test1.js",
   });
@@ -82,7 +82,7 @@ module.exports = foo() + 2`, {
   });
 });
 
-test("guess", async() => {
+test("guess", async () => {
   const cjs = await fromMem("module.exports = 4", {
     filename: join(__dirname, "test_guess1.cjs"),
     format: "guess",
@@ -231,7 +231,7 @@ export default 9`, {
   assert.equal(consoleOutput3.out, "1\n2\n");
 });
 
-test("version", async() => {
+test("version", async () => {
   const ver = process.version;
   Object.defineProperty(process, "version", {
     value: "v18.0.0",
@@ -248,7 +248,7 @@ test("version", async() => {
   });
 });
 
-test("no SourceTextModule", async() => {
+test("no SourceTextModule", async () => {
   const stm = vm.SourceTextModule;
   delete vm.SourceTextModule;
 
@@ -261,7 +261,7 @@ test("no SourceTextModule", async() => {
   vm.SourceTextModule = stm;
 });
 
-test("process.env", async() => {
+test("process.env", async () => {
   // No process gives the right error
   await assert.rejects(() => fromMem("module.exports = process", {
     filename: join(__dirname, "test11.js"),
@@ -295,4 +295,9 @@ module.exports = process.env.___TEST2___`, {
       ___TEST3___: "14",
     },
   })), "14");
+});
+
+test("bare", async () => {
+  const b = await fromMem("4", { filename: "bare.js", format: "bare" });
+  assert.equal(b, 4);
 });
