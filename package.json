@@ -33,7 +33,7 @@
     "semver": "7.7.2"
   },
   "devDependencies": {
-    "@peggyjs/eslint-config": "6.0.4",
+    "@peggyjs/eslint-config": "6.0.5",
     "@types/node": "24.0.13",
     "@types/semver": "7.7.0",
     "c8": "10.1.3",
