@@ -301,3 +301,43 @@ test("bare", async () => {
   const b = await fromMem("4", { filename: "bare.js", format: "bare" });
   assert.equal(b, 4);
 });
+
+test("globals", async () => {
+  const b = await fromMem("this.foo = 12", {
+    filename: "globals.js",
+    format: "globals",
+    exportVar: "foo",
+  });
+  assert.equal(b, 12);
+
+  assert.rejects(() => fromMem("this.foo = 13", {
+    filename: "globals.js",
+    format: "globals",
+  }), /exportVar required for format globals/);
+});
+
+test("amd", async () => {
+  const b = await fromMem("define(() => 13)", {
+    filename: "amd1.js",
+    format: "amd",
+  });
+  assert.equal(b, 13);
+
+  const c = await fromMem("define('foo', () => 14)", {
+    filename: "amd1.js",
+    format: "amd",
+  });
+  assert.equal(c, 14);
+
+  const d = await fromMem("define('foo', [], () => 15)", {
+    filename: "amd2.js",
+    format: "amd",
+  });
+  assert.equal(d, 15);
+
+  const e = await fromMem("define([], () => 16)", {
+    filename: "amd3.js",
+    format: "amd",
+  });
+  assert.equal(e, 16);
+});
