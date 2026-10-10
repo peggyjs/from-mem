@@ -1,4 +1,5 @@
 {
   "dep": ["prod", "dev", "packageManager"],
-  "packageFile": "package.json"
+  "packageFile": "package.json",
+  "cooldown": 7
 }
