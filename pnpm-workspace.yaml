@@ -1,7 +1,10 @@
 packages: []
-auditConfig:
-  ignoreGhsas:
-    - GHSA-238p-pmpm-9mq7
-    - GHSA-vfj7-8cjw-p6xm
 minimumReleaseAgeExclude:
-  - '@peggyjs/eslint-config@6.0.16'
+  - '@peggyjs/eslint-config@6.0.17'
+overrides:
+  'ajv@8.20.0>fasturi': ^3.1.9
+  'micromark-extension-math@3.1.0>katex': 0.19.1
+  'snappy-snaps@1.1.0>serialize-javascript': ^7.0.5
+  'table@6.9.0>fasturi': ^3.1.9
+  glob: ~14.0.6
+  minimatch: ~11.0.9
